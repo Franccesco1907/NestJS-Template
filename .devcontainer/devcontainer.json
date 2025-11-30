@@ -1,0 +1,10 @@
+{
+	"name": "Backend DevContainer",
+	"dockerComposeFile": "../docker-compose.local.yml",
+	"service": "backend",
+	"workspaceFolder": "/workspace/backend",
+	"remoteUser": "root",
+	"mounts": [
+		"source=${localWorkspaceFolder},target=/workspace/backend,type=bind"
+	]
+}

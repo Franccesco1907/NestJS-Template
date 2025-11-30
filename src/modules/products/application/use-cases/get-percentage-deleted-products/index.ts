@@ -1,0 +1,1 @@
+export * from './get-percentage-deleted-products.use-case';
