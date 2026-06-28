@@ -1,4 +1,4 @@
-import { EnvironmentService } from '@config/environment';
+import { EnvironmentService } from '@config/environment/services';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';

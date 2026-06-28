@@ -50,9 +50,4 @@ export class EnvironmentService {
     }
   }
 
-  get externalApis() {
-    return {
-      contentful: this.configService.get<string>('API_CONTENFUL')!,
-    };
-  }
 }

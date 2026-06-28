@@ -1,10 +1,26 @@
 {
   "name": "nestjs-template",
   "version": "0.0.1",
-  "description": "",
+  "description": "NestJS starter template with JWT auth, users, PostgreSQL, Docker, and Swagger.",
   "author": "Franccesco Jaimes",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "keywords": [
+    "nestjs",
+    "template",
+    "auth",
+    "users",
+    "postgresql",
+    "jwt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Franccesco1907/NestJS-Template.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Franccesco1907/NestJS-Template/issues"
+  },
+  "homepage": "https://github.com/Franccesco1907/NestJS-Template#readme",
   "scripts": {
     "build": "nest build",
     "build:prod": "nest build",
@@ -14,6 +30,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -21,14 +38,12 @@
   },
   "dependencies": {
     "@keyv/redis": "^4.4.0",
-    "@nestjs/axios": "^4.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
-    "@nestjs/schedule": "^6.0.0",
     "@nestjs/swagger": "^11.1.4",
     "@nestjs/typeorm": "^11.0.0",
     "bcrypt": "^6.0.0",

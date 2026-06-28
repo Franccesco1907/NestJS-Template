@@ -41,8 +41,6 @@ describe('EnvironmentService', () => {
                   return 'password';
                 case 'DATABASE_NAME':
                   return 'dbname';
-                case 'BLOCKED_IPS_URL':
-                  return 'http://example.com/blocked_ips.txt';
                 case 'CACHE_HOST':
                   return 'redis';
                 case 'CACHE_PORT':
@@ -127,11 +125,6 @@ describe('EnvironmentService', () => {
       expect(configService.get).toHaveBeenCalledWith('DATABASE_PASSWORD');
       expect(configService.get).toHaveBeenCalledWith('DATABASE_NAME');
     });
-  });
-
-  it('should get blockedIpsUrl', () => {
-    expect(service.blockedIpsUrl).toBe('http://example.com/blocked_ips.txt');
-    expect(configService.get).toHaveBeenCalledWith('BLOCKED_IPS_URL');
   });
 
   describe('cache', () => {
