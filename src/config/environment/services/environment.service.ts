@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CacheConfig, CorsConfig, DataBaseConfig } from '../interfaces';
+import { CorsConfig, DataBaseConfig } from '../interfaces';
 
 @Injectable()
 export class EnvironmentService {
@@ -40,14 +40,6 @@ export class EnvironmentService {
       password: this.configService.get<string>('DATABASE_PASSWORD')!,
       name: this.configService.get<string>('DATABASE_NAME')!,
     };
-  }
-
-  get cache(): CacheConfig {
-    return {
-      host: this.configService.get<string>('CACHE_HOST')!,
-      port: this.configService.get<number>('CACHE_PORT')!,
-      password: this.configService.get<string>('CACHE_PASSWORD')!,
-    }
   }
 
 }

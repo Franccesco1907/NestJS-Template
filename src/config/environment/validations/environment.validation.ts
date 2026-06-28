@@ -51,16 +51,6 @@ export class EnvironmentVariables {
   @IsString()
   CORS_CREDENTIALS: string;
 
-  @IsString()
-  CACHE_HOST: string;
-
-  @IsInt()
-  @Type(() => Number)
-  CACHE_PORT: number;
-
-  @IsString()
-  CACHE_PASSWORD: string;
-
   @MinLength(12)
   @IsString()
   JWT_SECRET: string;
