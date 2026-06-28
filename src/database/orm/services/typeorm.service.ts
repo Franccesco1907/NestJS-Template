@@ -1,4 +1,4 @@
-import { EnvironmentService } from '@config/environment';
+import { EnvironmentService } from '@config/environment/services';
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 

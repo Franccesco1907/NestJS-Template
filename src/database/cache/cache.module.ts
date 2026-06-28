@@ -1,6 +1,6 @@
-import { EnvironmentService } from "@config/environment";
+import { EnvironmentService } from '@config/environment/services';
 import KeyvRedis, { Keyv } from '@keyv/redis';
-import { Module } from "@nestjs/common";
+import { Module } from '@nestjs/common';
 
 export const CACHE_INSTANCE = 'CACHE_INSTANCE';
 

@@ -1,7 +1,10 @@
+import { EnvironmentService } from '@config/environment/services';
 import { Test, TestingModule } from '@nestjs/testing';
-import { EnvironmentService } from '@config/environment';
+import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './typeorm.service';
-import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+import type { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
+
+type PostgresTypeOrmModuleOptions = TypeOrmModuleOptions & PostgresConnectionOptions;
 
 describe('TypeOrmConfigService', () => {
   let service: TypeOrmConfigService;
@@ -37,7 +40,7 @@ describe('TypeOrmConfigService', () => {
 
   describe('createTypeOrmOptions', () => {
     it('should return the correct TypeOrmModuleOptions for development environment', () => {
-      const options = service.createTypeOrmOptions() as any;
+      const options = service.createTypeOrmOptions() as PostgresTypeOrmModuleOptions;
 
       expect(options.type).toBe('postgres');
       expect(options.host).toBe(environmentService.database.host);
@@ -91,7 +94,7 @@ describe('TypeOrmConfigService', () => {
       }).compile();
 
       const defaultService = defaultModule.get<TypeOrmConfigService>(TypeOrmConfigService);
-      const options = defaultService.createTypeOrmOptions() as any;
+      const options = defaultService.createTypeOrmOptions() as PostgresTypeOrmModuleOptions;
 
       expect(options.type).toBe('postgres');
       expect(options.host).toBeUndefined();

@@ -1,5 +1,5 @@
-import { IsEnum, IsInt, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 enum NodeEnv {
   development = 'development',
@@ -64,7 +64,4 @@ export class EnvironmentVariables {
   @MinLength(12)
   @IsString()
   JWT_SECRET: string;
-
-  @IsString()
-  API_CONTENFUL: string;
 }
