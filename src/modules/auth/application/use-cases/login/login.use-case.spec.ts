@@ -1,22 +1,23 @@
 import * as bcrypt from 'bcrypt';
 
-import { AuthService } from '@modules/auth/infrastructure/services';
+import { TokenIssuerPort } from '@modules/auth/application/ports';
+import type { JwtPayload } from '@modules/auth/domain/entities';
 import { FindUserByEmailUseCase } from '@modules/users/application/use-cases/find-user-by-email';
 import { UserEntity, UserRole } from '@modules/users/domain/entities';
 import { LoginUseCase } from './login.use-case';
 
 describe('LoginUseCase', () => {
   let findUserByEmailMock: jest.Mock<Promise<UserEntity | null>, [{ email: string }]>;
-  let authLoginMock: jest.Mock<Promise<string>, [UserEntity]>;
+  let tokenIssueMock: jest.Mock<Promise<string>, [JwtPayload]>;
   let useCase: LoginUseCase;
 
   beforeEach(() => {
     findUserByEmailMock = jest.fn<Promise<UserEntity | null>, [{ email: string }]>();
-    authLoginMock = jest.fn<Promise<string>, [UserEntity]>();
+    tokenIssueMock = jest.fn<Promise<string>, [JwtPayload]>();
 
     useCase = new LoginUseCase(
       { execute: findUserByEmailMock } as unknown as FindUserByEmailUseCase,
-      { login: authLoginMock } as unknown as AuthService,
+      { issue: tokenIssueMock } as unknown as TokenIssuerPort,
     );
   });
 
@@ -25,7 +26,7 @@ describe('LoginUseCase', () => {
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
     const user = buildUserEntity({ password: hashedPassword });
     findUserByEmailMock.mockResolvedValue(user);
-    authLoginMock.mockResolvedValue('signed.jwt.token');
+    tokenIssueMock.mockResolvedValue('signed.jwt.token');
 
     const result = await useCase.execute({
       email: user.email,
@@ -33,6 +34,11 @@ describe('LoginUseCase', () => {
     });
 
     expect(result).toEqual({ accessToken: 'signed.jwt.token' });
+    expect(tokenIssueMock).toHaveBeenCalledWith({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
     expect(result).not.toHaveProperty('password');
     expect(JSON.stringify(result)).not.toContain(hashedPassword);
   });

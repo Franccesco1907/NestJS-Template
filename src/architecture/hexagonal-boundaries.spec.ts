@@ -1,7 +1,19 @@
 import { readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 
-const FORBIDDEN_IMPORT_PATTERNS = [/from ['"]typeorm['"]/, /from ['"]@database\//, /from ['"]@nestjs\//, /from ['"].*infrastructure/];
+const DOMAIN_FORBIDDEN_IMPORT_PATTERNS = [
+  /from ['"]typeorm['"]/,
+  /from ['"]@database\//,
+  /from ['"]@nestjs\//,
+  /from ['"].*infrastructure/,
+];
+
+const APPLICATION_FORBIDDEN_IMPORT_PATTERNS = [
+  /from ['"]typeorm['"]/,
+  /from ['"]@database\//,
+  /from ['"]@modules\/[^'"]+\/infrastructure\//,
+  /from ['"][^'"]*infrastructure\//,
+];
 
 const FRAMEWORK_FREE_FILES = [
   'modules/users/domain/models/user.model.ts',
@@ -11,27 +23,57 @@ const FRAMEWORK_FREE_FILES = [
   'modules/users/application/mappers/user-output.mapper.ts',
   'modules/auth/application/dto/login.command.ts',
   'modules/auth/application/dto/login.output.ts',
+  'modules/auth/application/ports/token-issuer.port.ts',
 ];
 
-const DOMAIN_DIRECTORY = join(__dirname, '..', 'modules/users/domain');
+const DOMAIN_DIRECTORIES = [
+  join(__dirname, '..', 'modules/auth/domain'),
+  join(__dirname, '..', 'modules/users/domain'),
+];
+const APPLICATION_DIRECTORIES = [
+  join(__dirname, '..', 'modules/auth/application'),
+  join(__dirname, '..', 'modules/users/application'),
+];
 
 describe('hexagonal boundary PR1 files', () => {
   it.each(FRAMEWORK_FREE_FILES)('%s stays framework-free', (relativePath) => {
     const content = readFileSync(join(__dirname, '..', relativePath), 'utf8');
 
-    for (const forbiddenPattern of FORBIDDEN_IMPORT_PATTERNS) {
+    for (const forbiddenPattern of DOMAIN_FORBIDDEN_IMPORT_PATTERNS) {
       expect(content).not.toMatch(forbiddenPattern);
     }
   });
 });
 
 describe('users domain boundary', () => {
-  it.each(listTypeScriptFiles(DOMAIN_DIRECTORY))('%s has no infrastructure or framework imports', (filePath) => {
+  it.each(DOMAIN_DIRECTORIES.flatMap(listTypeScriptFiles))('%s has no infrastructure or framework imports', (filePath) => {
     const content = readFileSync(filePath, 'utf8');
 
-    for (const forbiddenPattern of FORBIDDEN_IMPORT_PATTERNS) {
+    for (const forbiddenPattern of DOMAIN_FORBIDDEN_IMPORT_PATTERNS) {
       expect(content).not.toMatch(forbiddenPattern);
     }
+  });
+});
+
+describe('application boundary', () => {
+  it.each(APPLICATION_DIRECTORIES.flatMap(listTypeScriptFiles))(
+    '%s has no persistence or infrastructure imports',
+    (filePath) => {
+      const content = readFileSync(filePath, 'utf8');
+
+      for (const forbiddenPattern of APPLICATION_FORBIDDEN_IMPORT_PATTERNS) {
+        expect(content).not.toMatch(forbiddenPattern);
+      }
+    },
+  );
+
+  it('allows Nest decorators and exceptions in application code', () => {
+    const loginUseCase = readFileSync(
+      join(__dirname, '..', 'modules/auth/application/use-cases/login/login.use-case.ts'),
+      'utf8',
+    );
+
+    expect(loginUseCase).toMatch(/from ['"]@nestjs\/common['"]/);
   });
 });
 

@@ -1,4 +1,5 @@
 import { LoginUseCase } from '@modules/auth/application/use-cases/login';
+import { TOKEN_ISSUER } from '@modules/auth/application/ports';
 import { UsersModule } from '@modules/users/infrastructure/controllers';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -24,10 +25,13 @@ import { AuthController } from './auth.controller';
   controllers: [AuthController],
   providers: [
     AuthService,
+    {
+      provide: TOKEN_ISSUER,
+      useExisting: AuthService,
+    },
     JwtStrategy,
     LoginUseCase,
   ],
   exports: [AuthService, JwtModule, PassportModule], // Exporta JwtModule y PassportModule para que otros módulos puedan usar JWT
 })
 export class AuthModule { }
-

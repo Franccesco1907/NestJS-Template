@@ -1,14 +1,15 @@
 import type { LoginCommand, LoginOutput } from '@modules/auth/application/dto';
-import { AuthService } from '@modules/auth/infrastructure/services';
+import { TOKEN_ISSUER, TokenIssuerPort } from '@modules/auth/application/ports';
 import { FindUserByEmailUseCase } from '@modules/users/application/use-cases/find-user-by-email';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class LoginUseCase {
   constructor(
     private readonly findUserByEmailUseCase: FindUserByEmailUseCase,
-    private readonly authService: AuthService,
+    @Inject(TOKEN_ISSUER)
+    private readonly tokenIssuer: TokenIssuerPort,
   ) { }
 
   async execute(loginDto: LoginCommand): Promise<LoginOutput> {
@@ -25,7 +26,11 @@ export class LoginUseCase {
       throw new UnauthorizedException('Invalid Credentials.');
     }
 
-    const accessToken = await this.authService.login(user);
+    const accessToken = await this.tokenIssuer.issue({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
     return { accessToken };
   }
 }
