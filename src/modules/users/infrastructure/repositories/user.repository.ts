@@ -1,24 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { UserEntity } from '../../domain/entities/user.entity';
-import { OrmBaseRepository } from '@database/orm/repositories';
-import { UserRepositoryInterface } from '@modules/users/domain/repositories';
+import type { User } from '@modules/users/domain/models';
+import { CreateUserInput, UserRepositoryInterface } from '@modules/users/domain/repositories';
+import { UserOrmEntity, UserPersistenceMapper } from '../persistence/typeorm';
 
 @Injectable()
-export class UserRepository
-  extends OrmBaseRepository<UserEntity>
-  implements UserRepositoryInterface {
-  constructor(
-    @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
-    private dataSource: DataSource,
-  ) {
-    super(userRepository.target, dataSource);
+export class UserRepository implements UserRepositoryInterface {
+  constructor(@InjectRepository(UserOrmEntity) private readonly userRepository: Repository<UserOrmEntity>) { }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    return user ? UserPersistenceMapper.toDomain(user) : null;
   }
 
-  async findByEmail(email: string): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { email } });
+  async findById(id: number): Promise<User | null> {
+    const user = await this.userRepository.findOne({ where: { id, deletedAt: IsNull() } });
+    return user ? UserPersistenceMapper.toDomain(user) : null;
+  }
+
+  async create(input: CreateUserInput): Promise<User> {
+    const user = this.userRepository.create(UserPersistenceMapper.toOrm(input));
+
+    return UserPersistenceMapper.toDomain(await this.userRepository.save(user));
   }
 }
-
