@@ -1,24 +1,23 @@
 import type { CreateUserCommand, UserOutput } from '@modules/users/application/dto';
+import { EmailAlreadyRegisteredError } from '@modules/users/application/errors';
 import { UserOutputMapper } from '@modules/users/application/mappers';
+import type { PasswordHasherPort } from '@modules/users/application/ports';
 import { USER_ROLES } from '@modules/users/domain/models';
-import { USER_REPOSITORY, UserRepositoryInterface } from '@modules/users/domain/repositories';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import type { UserRepositoryInterface } from '@modules/users/domain/repositories';
 
-@Injectable()
 export class CreateUserUseCase {
   constructor(
-    @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepositoryInterface,
-  ) { }
+    private readonly passwordHasher: PasswordHasherPort,
+  ) {}
 
   async execute(createUserDto: CreateUserCommand): Promise<UserOutput> {
     const existingUser = await this.userRepository.findByEmail(createUserDto.email);
     if (existingUser) {
-      throw new BadRequestException('El correo electrónico ya está registrado.');
+      throw new EmailAlreadyRegisteredError();
     }
 
-    const encryptedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const encryptedPassword = await this.passwordHasher.hash(createUserDto.password);
 
     const newUser = await this.userRepository.create({
       email: createUserDto.email,

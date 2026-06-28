@@ -1,5 +1,7 @@
+import { TOKEN_ISSUER, type TokenIssuerPort } from '@modules/auth/application/ports';
 import { LoginUseCase } from '@modules/auth/application/use-cases/login';
-import { TOKEN_ISSUER } from '@modules/auth/application/ports';
+import { PASSWORD_HASHER, type PasswordHasherPort } from '@modules/users/application/ports';
+import { FindUserByEmailUseCase } from '@modules/users/application/use-cases/find-user-by-email';
 import { UsersModule } from '@modules/users/infrastructure/controllers';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -30,8 +32,16 @@ import { AuthController } from './auth.controller';
       useExisting: AuthService,
     },
     JwtStrategy,
-    LoginUseCase,
+    {
+      provide: LoginUseCase,
+      useFactory: (
+        findUserByEmailUseCase: FindUserByEmailUseCase,
+        tokenIssuer: TokenIssuerPort,
+        passwordHasher: PasswordHasherPort,
+      ) => new LoginUseCase(findUserByEmailUseCase, tokenIssuer, passwordHasher),
+      inject: [FindUserByEmailUseCase, TOKEN_ISSUER, PASSWORD_HASHER],
+    },
   ],
   exports: [AuthService, JwtModule, PassportModule], // Exporta JwtModule y PassportModule para que otros módulos puedan usar JWT
 })
-export class AuthModule { }
+export class AuthModule {}

@@ -11,6 +11,8 @@ const DOMAIN_FORBIDDEN_IMPORT_PATTERNS = [
 const APPLICATION_FORBIDDEN_IMPORT_PATTERNS = [
   /from ['"]typeorm['"]/,
   /from ['"]@database\//,
+  /from ['"]@nestjs\//,
+  /from ['"]bcrypt['"]/,
   /from ['"]@modules\/[^'"]+\/infrastructure\//,
   /from ['"][^'"]*infrastructure\//,
 ];
@@ -20,10 +22,16 @@ const FRAMEWORK_FREE_FILES = [
   'modules/users/domain/repositories/user.repository.interface.ts',
   'modules/users/application/dto/create-user.command.ts',
   'modules/users/application/dto/user.output.ts',
+  'modules/users/application/errors/email-already-registered.error.ts',
   'modules/users/application/mappers/user-output.mapper.ts',
+  'modules/users/application/ports/password-hasher.port.ts',
+  'modules/users/application/use-cases/create-user/create-user.use-case.ts',
+  'modules/users/application/use-cases/find-user-by-email/find-user-by-email.use-case.ts',
   'modules/auth/application/dto/login.command.ts',
   'modules/auth/application/dto/login.output.ts',
+  'modules/auth/application/errors/invalid-credentials.error.ts',
   'modules/auth/application/ports/token-issuer.port.ts',
+  'modules/auth/application/use-cases/login/login.use-case.ts',
 ];
 
 const DOMAIN_DIRECTORIES = [
@@ -46,13 +54,16 @@ describe('hexagonal boundary PR1 files', () => {
 });
 
 describe('users domain boundary', () => {
-  it.each(DOMAIN_DIRECTORIES.flatMap(listTypeScriptFiles))('%s has no infrastructure or framework imports', (filePath) => {
-    const content = readFileSync(filePath, 'utf8');
+  it.each(DOMAIN_DIRECTORIES.flatMap(listTypeScriptFiles))(
+    '%s has no infrastructure or framework imports',
+    (filePath) => {
+      const content = readFileSync(filePath, 'utf8');
 
-    for (const forbiddenPattern of DOMAIN_FORBIDDEN_IMPORT_PATTERNS) {
-      expect(content).not.toMatch(forbiddenPattern);
-    }
-  });
+      for (const forbiddenPattern of DOMAIN_FORBIDDEN_IMPORT_PATTERNS) {
+        expect(content).not.toMatch(forbiddenPattern);
+      }
+    },
+  );
 });
 
 describe('application boundary', () => {
@@ -67,14 +78,15 @@ describe('application boundary', () => {
     },
   );
 
-  it('allows Nest decorators and exceptions in application code', () => {
-    const loginUseCase = readFileSync(
-      join(__dirname, '..', 'modules/auth/application/use-cases/login/login.use-case.ts'),
-      'utf8',
-    );
+  it.each(APPLICATION_DIRECTORIES.flatMap(listTypeScriptFiles))(
+    '%s has no Nest or bcrypt imports',
+    (filePath) => {
+      const content = readFileSync(filePath, 'utf8');
 
-    expect(loginUseCase).toMatch(/from ['"]@nestjs\/common['"]/);
-  });
+      expect(content).not.toMatch(/from ['"]@nestjs\//);
+      expect(content).not.toMatch(/from ['"]bcrypt['"]/);
+    },
+  );
 });
 
 function listTypeScriptFiles(directory: string): string[] {

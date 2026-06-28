@@ -1,16 +1,11 @@
-import { USER_REPOSITORY, UserRepositoryInterface } from '@modules/users/domain/repositories';
-import { Inject, Injectable } from '@nestjs/common';
+import type { UserRepositoryInterface } from '@modules/users/domain/repositories';
 
 interface FindUserByEmailQuery {
   email: string;
 }
 
-@Injectable()
 export class FindUserByEmailUseCase {
-  constructor(
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: UserRepositoryInterface,
-  ) { }
+  constructor(private readonly userRepository: UserRepositoryInterface) {}
 
   async execute(query: FindUserByEmailQuery) {
     return this.userRepository.findByEmail(query.email);
