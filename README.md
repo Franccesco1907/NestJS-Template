@@ -1,244 +1,172 @@
-# Backend Challenge - IP Blocklist Service
+# NestJS Auth + Users Template
 
-## The Problem
+A focused NestJS starter for building REST APIs with authentication, user accounts, PostgreSQL persistence, Swagger documentation, Docker-based local development, and a layered module structure.
 
-We need a service that helps protect our applications from malicious IP addresses. These IPs might be used for DDoS attacks, brute force attempts, or other harmful activities. The goal is to create a service that can quickly tell us if an IP address should be blocked.
+This template intentionally includes only two business modules:
 
-## Your Challenge
+| Module | Responsibility |
+| --- | --- |
+| `auth` | Public registration, login, JWT issuance, and JWT strategy wiring. |
+| `users` | User entity, repository boundary, user creation use case, and sanitized user DTOs. |
 
-Design and implement a solution that addresses this problem. Think about:
+## Quick Start
 
-1. How would you store and query IP addresses efficiently?
-2. How would you keep the blocklist up to date?
-3. How would you ensure the service is reliable and performant?
-4. What additional features would make this service more useful?
+### Option 1: Docker local stack
 
+1. Copy the sample environment file:
 
-## Solution Overview
+   ```bash
+   cp .env.example .env
+   ```
 
-This service is built using **NestJS** and follows a **hexagonal architecture**, separating the core application logic from infrastructure concerns. It leverages **Redis** for efficient storage and retrieval of IP addresses, ensuring high performance for checking against the blocklist.
+2. Start PostgreSQL, Redis, and the NestJS API:
 
-The service exposes a REST API for interacting with the blocklist:
+   ```bash
+   docker compose -f docker-compose.local.yml up --build
+   ```
 
--   **`POST /blocklist`**: Adds a new IP address to the blocklist.
--   **`DELETE /blocklist/:ipAddress`**: Removes an IP address from the blocklist.
--   **`GET /:ipAddress`**: Checks if a given IP address is present in the blocklist.
+3. Open the API docs:
 
-The service also includes a scheduled task to periodically fetch and update the blocklist from the provided public list ([https://github.com/stamparm/ipsum](https://github.com/stamparm/ipsum)).
+   - API base URL: <http://localhost:3000/api/v1>
+   - Swagger UI: <http://localhost:3000/docs>
 
+### Option 2: Local Node.js
 
-## Key Features
+1. Install dependencies:
 
--   **Efficient IP Address Storage and Querying**: Utilizes Redis, an in-memory data store, for fast lookups using Redis Sets.
--   **Up-to-date Blocklist**: Implements a scheduled job to fetch and update the blocklist daily from the specified external source.
--   **Reliable and Performant**: Designed with performance in mind, leveraging Redis for low-latency checks. The hexagonal architecture promotes maintainability and testability, contributing to reliability.
--   **Comprehensive API**: Provides endpoints for adding, removing, and checking IP addresses.
--   **Automated Testing**: Includes 100% unit test coverage, ensuring the reliability and correctness of the core logic.
--   **Containerized Deployment**: Uses Docker for easy deployment and consistency across different environments.
--   **Configuration Management**: Leverages NestJS's configuration module for managing environment-specific settings.
--   **Logging and Monitoring**: Includes logging using NestJS interceptors for request/response tracking. (Further monitoring aspects are discussed below).
--   **Health Checks**: Includes health API for health checking
+   ```bash
+   npm install
+   ```
 
-## Getting Started
+2. Copy and adjust the environment file:
 
-### Prerequisites
+   ```bash
+   cp .env.example .env
+   ```
 
--   Docker
--   Docker Compose
+3. Start PostgreSQL and Redis using Docker:
 
-### Running the Service Locally
+   ```bash
+   docker compose -f docker-compose.local.yml up postgres redis
+   ```
 
-1.  Clone the repository (if you haven't already).
-2.  Navigate to the project directory and change `.env.example` to `.env`.
-3.  Run the following command to build and start the service and its dependencies (Redis):
+4. In another terminal, run the API:
 
-    ```bash
-    docker-compose -f docker-compose.local.yml up -d --build
-    ```
+   ```bash
+   npm run start:dev
+   ```
 
-4.  The service will be accessible at `http://localhost:3000/api/v1`.
-5.  The Swagger documentation will be available at `http://localhost:3000/docs`.
+## Environment Variables
 
+The application reads `.env` through `@nestjs/config` and validates the variables at startup.
 
-### Running the Service in Production Mode
+| Variable | Required | Example | Description |
+| --- | --- | --- | --- |
+| `NODE_ENV` | Yes | `development` | Runtime mode: `development`, `production`, or `test`. |
+| `API_PORT` | Yes | `3000` | Port used by the NestJS HTTP server. |
+| `TIMEOUT` | Yes | `12000` | Global request timeout in milliseconds. |
+| `CORS_ORIGINS` | Yes | `http://localhost,http://localhost:4200` | Comma-separated allowed origins. |
+| `CORS_METHODS` | Yes | `GET,POST,PUT,DELETE,OPTIONS` | Allowed CORS methods. |
+| `CORS_ALLOWED_HEADERS` | Yes | `Content-Type,Authorization` | Allowed CORS request headers. |
+| `CORS_EXPOSED_HEADERS` | Yes | `Content-Type,Authorization` | Exposed CORS response headers. |
+| `CORS_CREDENTIALS` | Yes | `true` | Whether CORS credentials are enabled. |
+| `DATABASE_HOST` | Yes | `postgres` | PostgreSQL host. Use `localhost` when running the API outside Docker. |
+| `DATABASE_PORT` | Yes | `5432` | PostgreSQL port. |
+| `DATABASE_USERNAME` | Yes | `postgres` | PostgreSQL username. |
+| `DATABASE_PASSWORD` | Yes | `postgres` | PostgreSQL password. |
+| `DATABASE_NAME` | Yes | `nestjs_template` | PostgreSQL database name. |
+| `CACHE_HOST` | Yes | `redis` | Redis host used by the shared cache provider. Use `localhost` outside Docker. |
+| `CACHE_PORT` | Yes | `6379` | Redis port. |
+| `CACHE_PASSWORD` | Yes | `myStrongPassword` | Redis password; keep it secret outside local development. |
+| `JWT_SECRET` | Yes | `change-me-in-a-real-environment` | JWT signing secret. Must be at least 12 characters. |
 
-1.  Clone the repository (if you haven't already).
-2.  Navigate to the project directory and change `.env.example` to `.env`.
-3.  Run the following command to build and start the service and its dependencies (Redis):
+## Available Commands
 
-    ```bash
-    docker-compose -f docker-compose.prod.yml up -d --build
-    ```
+| Command | Purpose |
+| --- | --- |
+| `npm run start` | Start the NestJS app once. |
+| `npm run start:dev` | Start the app in watch mode. |
+| `npm run start:debug` | Start the app in debug watch mode. |
+| `npm run start:prod` | Run the compiled app from `dist/main`. |
+| `npm run build` | Compile the application with Nest CLI. |
+| `npm run build:prod` | Compile the production build. |
+| `npm run typecheck` | Run TypeScript type checking without emitting files. |
+| `npm run lint` | Run ESLint with `--fix` for local cleanup. |
+| `npm run format` | Format TypeScript source and test files with Prettier. |
+| `npm test` | Run the Jest test suite. |
+| `npm run test:watch` | Run Jest in watch mode. |
+| `npm run test:cov` | Run Jest with coverage output. |
+| `npm run test:debug` | Run Jest through the Node debugger. |
 
-4.  The service will be accessible at `http://localhost:3000/api/v1`.
-5.  The Swagger documentation will be available at `http://localhost:3000/docs`.
+## API Surface
 
+All routes are served under the global prefix `/api/v1`.
 
-### Using the Service
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/v1` | Health check endpoint. |
+| `POST` | `/api/v1/auth/register` | Create a non-admin user account. The public DTO accepts email, password, first name, and last name. |
+| `POST` | `/api/v1/auth/login` | Authenticate with email and password and receive auth data. |
 
-You can interact with the service using the Swagger documentation interface (available at `http://localhost:3000/docs`) or tools like Postman.
+Swagger is available at `/docs` and includes bearer-auth support for protected endpoints.
 
-For developers who wish to explore, modify, or debug the service, you can also leverage **Development Containers (Dev Containers)**. This setup provides a consistent and isolated development environment within the Docker containers defined in this project. Using tools that support Dev Containers (such as VS Code with the Remote - Containers extension), you can directly connect to the running service container and work on the codebase with all necessary dependencies and configurations already set up.
+## Architecture and Module Boundaries
 
+The template keeps a small, explicit module graph:
 
-## Some Questions to Consider
+```text
+AppModule
+├── CustomConfigModule
+├── DatabaseModule
+│   ├── OrmDatabaseModule
+│   └── CustomCacheModule
+├── AuthModule
+└── UsersModule
+```
 
-- **How would you handle millions of IP addresses?**
+The feature code follows a layered structure:
 
-   - **Redis Sets**: The solution utilizes Redis Sets to store the blocked IP addresses. Redis Sets are highly efficient for checking the existence of an element (IP address in this case) due to their underlying hash table implementation. This allows for lookups with an average time complexity of O(1), even with millions of entries.
+```text
+src/modules/<module>
+├── domain          # entities and repository contracts
+├── application     # use cases
+└── infrastructure  # controllers, DTOs, mappers, repositories, guards, strategies
+```
 
-   - **Memory Efficiency**: While storing millions of IPs in memory requires careful consideration, Redis is known for its memory efficiency. For IPv4 addresses, storing them directly as strings.
+Auth and user responses are intentionally sanitized: password values are accepted only as credentials or persistence inputs and are not returned by the public user DTO mapper.
 
-   - **Scalability**:
-      - **Redis**: Redis can be scaled horizontally using techniques like clustering or partitioning if the number of IP addresses grows extremely large or if read/write throughput becomes a bottleneck.
-      
-      - **Node.js Application**: The backend application, built with Node.js and NestJS, is inherently well-suited for horizontal scaling. Node.js's non-blocking, event-driven architecture allows it to handle a large number of concurrent requests efficiently. By running multiple instances of the application behind a load balancer, you can distribute traffic and increase the service's capacity to handle a growing number of requests. This stateless nature of the application tier makes horizontal scaling straightforward.
+## Database and Cache
 
-- **What happens if the service goes down?**
+- PostgreSQL is the runtime database and is configured through TypeORM.
+- The migration datasource uses the same PostgreSQL environment variables as the application runtime.
+- Redis is wired as a shared cache provider through `CustomCacheModule`; it is available to future modules but not exposed as a public API by this template.
+- In local Docker mode, service-to-service hosts are `postgres` and `redis`. In local Node mode, set those hosts to `localhost` in `.env`.
 
-   - **Redis Persistence (Consideration for Production)**: For production deployments, it's crucial to configure Redis with persistence mechanisms such as RDB snapshots (saving the dataset at specific intervals) or AOF logs (logging every write operation). These features ensure that the blocklist can be saved to disk and reloaded upon restarting Redis, minimizing potential downtime and data loss.
+## Testing
 
-   - **Redundancy**: For critical production environments, deploying Redis in a highly available configuration (e.g., using Redis Sentinel or Redis Cluster) would provide redundancy. If one Redis instance fails, another can take over, ensuring the blocklist service remains operational.
+Run the full verification set before opening a pull request:
 
-   - **Stateless Application**: The NestJS application itself should ideally be stateless. This allows for easy scaling and replacement of instances without losing critical data, as the state (the blocklist) resides in Redis. Load balancers can distribute traffic across multiple instances of the NestJS application.
+```bash
+npm test
+npm run typecheck
+npm run build
+```
 
-- **How would you know if your solution is working well?**
+The current tests cover shared interceptors/filters/utilities, environment and TypeORM configuration, auth/user use cases, and user DTO mapping.
 
-   - **Automated Tests**: The existing 100% unit test coverage ensures that the individual components of the service function as expected. Integration tests can be added to verify the interaction between different parts of the system (e.g., the API endpoints and the Redis integration).
+## Production Docker
 
-   - **Monitoring**: Implementing comprehensive monitoring is crucial. This includes:
+Build and run the production compose stack with:
 
-   - **API Response Times**: Tracking the latency of the Check IP Address endpoint is critical to ensure the service is performing efficiently. High latency could indicate issues with Redis or the application logic.
+```bash
+docker compose -f docker-compose.prod.yml up --build
+```
 
-   - **Error Rates**: Monitoring the number of errors (e.g., HTTP 5xx errors) from the API endpoints can indicate problems with the service's stability.
+Use production-grade secrets in `.env` before running the production stack. The sample `.env.example` is only a development baseline.
 
-   - **Redis Metrics**: Monitoring Redis performance, such as memory usage, CPU utilization, connection count, and cache hit rate, is essential for identifying potential bottlenecks or issues with the data store.
+## Next Steps for Consumers
 
-   - **Scheduled Task Success/Failure**: Tracking the success and failure rate of the daily IP list update job is important to ensure the blocklist remains current.
-
-   - **Resource Utilization**: Monitoring the CPU and memory usage of the application containers can help identify resource constraints.
-
-   - **Health Checks**: Implementing a health check endpoint (e.g., /health) that reports the status of the application and its dependencies (like Redis) allows for automated monitoring by orchestration tools and load balancers.
-
-   - **Logging**: Structured logging provides valuable insights into the application's behavior and can help in debugging issues.
-
-
-- **What metrics would you track?**
-
-   Based on the above, key metrics to track include:
-
-   - API Latency (P50, P95, P99) for /check/:ipAddress
-   - HTTP Error Rates (4xx and 5xx)
-   - Redis Memory Usage
-   - Redis CPU Utilization
-   - Redis Connection Count
-   - Redis Cache Hit Rate (for other potential caching mechanisms)
-   - Success/Failure Rate of the IP List Update Job
-   - Application CPU Usage
-   - Application Memory Usage
-   - Number of Blocked IP Checks per Minute/Second
-   - These metrics can be visualized using monitoring tools like Prometheus, Grafana, or cloud-specific monitoring services.
-
-
-- **How would you deploy and scale this service?**
-
-   - **Deployment**:
-      - **Containerization**: The use of Docker already provides a consistent and portable deployment unit.
-      
-      - **Orchestration**: For production deployments, container orchestration platforms like Kubernetes or Docker Swarm would be ideal. These platforms automate the deployment, scaling, and management of containerized applications.
-      
-      - **Cloud Providers**: Deploying to cloud platforms like AWS (ECS, EKS), Google Cloud (Cloud Run, GKE), or Azure (ACI, AKS) provides managed infrastructure and scaling capabilities.
-
-   - **Scaling**:
-      - **Horizontal Scaling (Application)**: The stateless nature of the NestJS application allows for easy horizontal scaling by increasing the number of container instances. A load balancer (e.g., Nginx, HAProxy, cloud load balancers) would distribute traffic across these instances.
-      
-      - **Scaling Redis**: Depending on the workload and data size, Redis can be scaled:
-         - **Read Replicas**: For read-heavy workloads (primarily the Check endpoint), adding read replicas can distribute the read load.
-         - **Clustering/Partitioning**: For very large datasets or high write throughput (adding/removing IPs), Redis Cluster allows for distributing data across multiple nodes.
-      
-      - **Database Considerations**: If you were to introduce a relational database for other purposes, you would need to consider its scaling capabilities as well.
-
-
-## What We're Looking For
-
-We want to see how you approach problems and make technical decisions. Consider:
-
-- **How you think about system design**
-
-   My approach to system design involves:
-
-   - **Understanding the Core Problem**: Clearly defining the requirements and constraints of the problem (e.g., the need for fast IP lookups, handling millions of IPs, keeping the list updated).
-
-   - **Identifying Key Components**: Breaking down the system into logical components (API, data storage, background tasks).
-
-   - **Choosing the Right Technologies**: Selecting technologies that are well-suited for the specific tasks and performance requirements (e.g., Redis for fast lookups, NestJS for building a scalable backend, updated libraries, etc.).
-
-   - **Prioritizing Performance and Scalability**: Designing the system with the potential for high traffic and large datasets in mind. This often involves considering data structures, caching strategies, and horizontal scaling.
-
-   - **Ensuring Reliability**: Implementing mechanisms for data persistence, redundancy, and monitoring to minimize downtime and ensure the system operates correctly.
-
-   - **Considering Maintainability and Testability**: Architecting the system in a modular way that is easy to understand, test, and evolve (as demonstrated by the hexagonal architecture).
-
-   - **Iterative Approach**: Recognizing that system design is often an iterative process. Starting with a core solution and then adding features and optimizations based on needs and feedback.
-
-
-- **Your understanding of performance and scalability**
-
-   Performance and scalability are critical considerations in this design:
-
-   - **Performance**: The choice of Redis as the primary data store directly addresses the performance requirement for fast IP address checks. The O(1) lookup time complexity of Redis Sets ensures low latency even with a large number of blocked IPs. Efficient data structures and minimizing network calls are key to achieving good performance.
-   
-   - **Scalability**: The design considers both vertical and horizontal scaling. Redis can be scaled vertically (increasing resources on a single machine) and horizontally (clustering). The stateless nature of the application allows for horizontal scaling by adding more instances behind a load balancer. Asynchronous operations and efficient resource management within the application also contribute to scalability.
-
-
-- **Your approach to reliability and monitoring**
-
-   Reliability and monitoring are addressed through:
-
-   - **Data Persistence (Redis)**: Ensuring the blocklist survives service restarts.
-   - **Redundancy (Potential Redis Setup)**: Minimizing single points of failure in the data store.
-   - **Automated Testing**: Verifying the correctness of the application logic.
-   - **Health Checks**: Allowing for automated detection of unhealthy instances.
-   - **Comprehensive Monitoring**: Tracking key metrics to identify performance bottlenecks, errors, and the overall health of the system.
-   - **Logging**: Providing detailed information for debugging and auditing.
-
-
-- **How you make trade-offs between different solutions**
-
-   When making technical decisions, I consider various trade-offs:
-
-   - **Performance vs. Complexity**: Sometimes, highly performant solutions can be more complex to implement and maintain. For example, using more intricate data structures or caching mechanisms might offer marginal performance gains at the cost of increased complexity.
-
-   - **Memory Usage vs. Performance**: In-memory data stores like Redis offer excellent performance but require careful management of memory usage, especially with large datasets. Trade-offs might involve data compression or more sophisticated memory management techniques.
-
-   - **Development Speed vs. Long-Term Maintainability**: Choosing simpler, well-understood technologies might lead to faster development but could potentially limit scalability or maintainability in the long run. Conversely, more complex architectures might take longer to implement but offer better long-term benefits.
-
-   - **Cost vs. Scalability/Reliability**: Highly scalable and reliable solutions often come with increased infrastructure costs. Balancing these costs with the required level of scalability and reliability is crucial.
-   In the context of this challenge, the choice of Redis strikes a good balance between performance, scalability, and relative ease of use. The hexagonal architecture promotes maintainability and testability, which are important for long-term reliability.
-
-
-## Potential Improvements
-
-   While the current solution is well-structured, here are some potential improvements to consider:
-
-   - **Rate Limiting**: Implement rate limiting on the API endpoints to prevent abuse.
-
-   - **Caching in the Application Layer**: For frequently checked IPs (especially those not on the blocklist), consider adding a local cache in the application layer to reduce the load on Redis.
-
-   - **More Granular Blocklist Management**: Allow for blocking IP ranges (CIDR notation) instead of just individual IPs. This would require updating the storage and checking logic.
-
-   - **Admin Interface**: Develop a user interface for managing the blocklist (adding, removing, searching).
-
-   - **Audit Logging**: Implement more detailed audit logging for changes to the blocklist.
-
-   - **Integration with Security Tools**: Explore integration with other security tools and platforms for sharing and consuming threat intelligence.
-
-   - **Advanced Monitoring and Alerting**: Set up alerts based on the tracked metrics to proactively identify and address issues.
-
-   - **IP Geolocation**: Consider adding IP geolocation information for blocked IPs for enhanced analysis.
-   
-   
-## Final Note
-   This solution provides a robust foundation for an IP blocklist service, emphasizing performance, scalability, and reliability. The hexagonal architecture and comprehensive testing contribute to a maintainable and dependable system. The detailed answers to your questions further illustrate the design considerations and potential for future enhancements.
-   
-   Thank you for the opportunity to analyze and extend this excellent piece of work!
+- Replace the default package metadata with your service name and repository URLs.
+- Add CI workflow files that run `npm test`, `npm run typecheck`, and `npm run build`.
+- Add migrations for your first domain-specific entities before disabling TypeORM synchronization in development.
+- Add new business modules under `src/modules/<feature>` while keeping domain, application, and infrastructure boundaries explicit.
