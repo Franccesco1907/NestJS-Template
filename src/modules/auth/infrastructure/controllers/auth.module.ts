@@ -17,12 +17,12 @@ import { AuthController } from './auth.controller';
     ConfigModule,
     PassportModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule], // Importa ConfigModule para usar ConfigService
+      imports: [ConfigModule], // Import ConfigModule so ConfigService is available
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '60m' }, // Token expira en 60 minutos
+        signOptions: { expiresIn: '60m' }, // Token expires in 60 minutes
       }),
-      inject: [ConfigService], // Inyecta ConfigService
+      inject: [ConfigService], // Inject ConfigService
     }),
   ],
   controllers: [AuthController],
@@ -43,6 +43,6 @@ import { AuthController } from './auth.controller';
       inject: [FindUserByEmailUseCase, TOKEN_ISSUER, PASSWORD_HASHER],
     },
   ],
-  exports: [AuthService, JwtModule, PassportModule], // Exporta JwtModule y PassportModule para que otros módulos puedan usar JWT
+  exports: [AuthService, JwtModule, PassportModule], // Export JwtModule and PassportModule so other modules can use JWT
 })
 export class AuthModule {}
