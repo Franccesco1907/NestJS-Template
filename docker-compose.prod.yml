@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   postgres:
-    container_name: ip-blocklist-postgres
+    container_name: nestjs-template-postgres
     image: postgres:17.5-alpine
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
@@ -13,7 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
-    container_name: ip-blocklist-redis
+    container_name: nestjs-template-redis
     image: redis:8.0-alpine
     ports:
       - "6379:6379"
@@ -23,7 +23,7 @@ services:
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
 
   backend:
-    container_name: ip-blocklist-service
+    container_name: nestjs-template-service
     build:
       context: .
       dockerfile: Dockerfile.prod
