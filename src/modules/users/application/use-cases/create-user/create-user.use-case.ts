@@ -9,7 +9,6 @@ interface CreateUserDto {
   password: string;
   firstName?: string;
   lastName?: string;
-  role?: UserRole;
 }
 
 @Injectable()
@@ -28,11 +27,13 @@ export class CreateUserUseCase {
     const encryptedPassword = await bcrypt.hash(createUserDto.password, 10);
 
     const newUser = await this.userRepository.create({
-      ...createUserDto,
+      email: createUserDto.email,
       password: encryptedPassword,
+      firstName: createUserDto.firstName,
+      lastName: createUserDto.lastName,
+      role: UserRole.USER,
     });
 
     return UserMapper.toDto(newUser);
   }
 }
-
