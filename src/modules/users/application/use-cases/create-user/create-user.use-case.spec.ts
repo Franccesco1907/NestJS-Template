@@ -1,8 +1,7 @@
-import * as bcrypt from 'bcrypt';
-import { BadRequestException } from '@nestjs/common';
-
+import { EmailAlreadyRegisteredError } from '@modules/users/application/errors';
+import type { PasswordHasherPort } from '@modules/users/application/ports';
 import { UserEntity, UserRole } from '@modules/users/domain/entities';
-import { UserRepositoryInterface } from '@modules/users/domain/repositories';
+import type { UserRepositoryInterface } from '@modules/users/domain/repositories';
 import { CreateUserUseCase } from './create-user.use-case';
 
 type CreateInput = Parameters<UserRepositoryInterface['create']>[0];
@@ -12,18 +11,24 @@ describe('CreateUserUseCase', () => {
 
   let createMock: jest.Mock<Promise<UserEntity>, [CreateInput]>;
   let findByEmailMock: jest.Mock<Promise<UserEntity | null>, [string]>;
+  let hashMock: jest.Mock<Promise<string>, [string]>;
   let useCase: CreateUserUseCase;
 
   beforeEach(() => {
     createMock = jest.fn<Promise<UserEntity>, [CreateInput]>();
     findByEmailMock = jest.fn<Promise<UserEntity | null>, [string]>();
+    hashMock = jest.fn<Promise<string>, [string]>().mockResolvedValue('hashed-password');
 
     const userRepository = {
       create: createMock,
       findByEmail: findByEmailMock,
     } as unknown as UserRepositoryInterface;
 
-    useCase = new CreateUserUseCase(userRepository);
+    const passwordHasher = {
+      hash: hashMock,
+    } as unknown as PasswordHasherPort;
+
+    useCase = new CreateUserUseCase(userRepository, passwordHasher);
   });
 
   it('creates public users with the default non-admin role and without returning password', async () => {
@@ -48,6 +53,7 @@ describe('CreateUserUseCase', () => {
     expect(createMock).toHaveBeenCalledWith(
       expect.objectContaining({
         email: 'user@example.com',
+        password: 'hashed-password',
         role: UserRole.USER,
         firstName: 'Template',
         lastName: 'User',
@@ -91,6 +97,7 @@ describe('CreateUserUseCase', () => {
 
   it('hashes the password before persisting a user', async () => {
     findByEmailMock.mockResolvedValue(null);
+    hashMock.mockResolvedValue('hashed-secure-password');
     createMock.mockImplementation(async (input) =>
       buildUserEntity({
         email: String(input.email),
@@ -105,8 +112,8 @@ describe('CreateUserUseCase', () => {
     });
 
     const persistedInput = createMock.mock.calls[0][0];
-    expect(persistedInput.password).not.toBe(plainPassword);
-    await expect(bcrypt.compare(plainPassword, String(persistedInput.password))).resolves.toBe(true);
+    expect(hashMock).toHaveBeenCalledWith(plainPassword);
+    expect(persistedInput.password).toBe('hashed-secure-password');
   });
 
   it('rejects duplicate email addresses before hashing or persisting', async () => {
@@ -117,8 +124,9 @@ describe('CreateUserUseCase', () => {
         email: 'user@example.com',
         password: plainPassword,
       }),
-    ).rejects.toBeInstanceOf(BadRequestException);
+    ).rejects.toBeInstanceOf(EmailAlreadyRegisteredError);
 
+    expect(hashMock).not.toHaveBeenCalled();
     expect(createMock).not.toHaveBeenCalled();
   });
 });

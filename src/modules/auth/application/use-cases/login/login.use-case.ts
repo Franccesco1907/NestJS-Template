@@ -1,15 +1,15 @@
 import type { LoginCommand, LoginOutput } from '@modules/auth/application/dto';
-import { AuthService } from '@modules/auth/infrastructure/services';
+import { InvalidCredentialsError } from '@modules/auth/application/errors';
+import type { TokenIssuerPort } from '@modules/auth/application/ports';
+import type { PasswordHasherPort } from '@modules/users/application/ports';
 import { FindUserByEmailUseCase } from '@modules/users/application/use-cases/find-user-by-email';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 
-@Injectable()
 export class LoginUseCase {
   constructor(
     private readonly findUserByEmailUseCase: FindUserByEmailUseCase,
-    private readonly authService: AuthService,
-  ) { }
+    private readonly tokenIssuer: TokenIssuerPort,
+    private readonly passwordHasher: PasswordHasherPort,
+  ) {}
 
   async execute(loginDto: LoginCommand): Promise<LoginOutput> {
     const user = await this.findUserByEmailUseCase.execute({
@@ -17,15 +17,19 @@ export class LoginUseCase {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid Credentials.');
+      throw new InvalidCredentialsError();
     }
 
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await this.passwordHasher.compare(loginDto.password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid Credentials.');
+      throw new InvalidCredentialsError();
     }
 
-    const accessToken = await this.authService.login(user);
+    const accessToken = await this.tokenIssuer.issue({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
     return { accessToken };
   }
 }
