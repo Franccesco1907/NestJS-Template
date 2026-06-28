@@ -1,12 +1,17 @@
 // src/modules/auth/infrastructure/services/auth.service.ts
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import type { TokenIssuerPort } from '@modules/auth/application/ports';
 import { JwtPayload } from '@modules/auth/domain/entities';
 import type { User } from '@modules/users/domain/models';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements TokenIssuerPort {
   constructor(private readonly jwtService: JwtService) { }
+
+  issue(payload: JwtPayload): string {
+    return this.jwtService.sign(payload);
+  }
 
   async login(user: User): Promise<string> {
     const payload: JwtPayload = {
@@ -14,13 +19,6 @@ export class AuthService {
       email: user.email,
       role: user.role as JwtPayload['role'],
     };
-    return this.jwtService.sign(payload);
-  }
-
-  // Puedes añadir un método para validar el usuario (ej. desde la estrategia JWT)
-  async validateUserById(userId: string): Promise<User | null> {
-    // Aquí deberías inyectar el IUserRepository y buscar el usuario por ID
-    // Por simplicidad, este método es solo un placeholder, la lógica real estará en JwtStrategy
-    return null;
+    return this.issue(payload);
   }
 }
