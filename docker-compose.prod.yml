@@ -12,16 +12,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  redis:
-    container_name: nestjs-template-redis
-    image: redis:8.0-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-
   backend:
     container_name: nestjs-template-service
     build:
@@ -31,8 +21,6 @@ services:
       - "3000:3000"
     depends_on:
       - postgres
-      - redis
 
 volumes:
   postgres_data:
-  redis_data:

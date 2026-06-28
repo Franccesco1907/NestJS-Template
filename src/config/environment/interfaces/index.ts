@@ -4,7 +4,6 @@ export interface Environment {
   timeout: number;
   cors: CorsConfig;
   database: DataBaseConfig;
-  cache: CacheConfig;
 }
 
 export interface CorsConfig {
@@ -21,10 +20,4 @@ export interface DataBaseConfig {
   username: string;
   password: string;
   name: string;
-}
-
-export interface CacheConfig {
-  host: string;
-  port: number;
-  password: string;
 }

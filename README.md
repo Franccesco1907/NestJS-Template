@@ -19,7 +19,7 @@ This template intentionally includes only two business modules:
    cp .env.example .env
    ```
 
-2. Start PostgreSQL, Redis, and the NestJS API:
+2. Start PostgreSQL and the NestJS API:
 
    ```bash
    docker compose -f docker-compose.local.yml up --build
@@ -44,10 +44,10 @@ This template intentionally includes only two business modules:
    cp .env.example .env
    ```
 
-3. Start PostgreSQL and Redis using Docker:
+3. Start PostgreSQL using Docker:
 
    ```bash
-   docker compose -f docker-compose.local.yml up postgres redis
+   docker compose -f docker-compose.local.yml up postgres
    ```
 
 4. In another terminal, run the API:
@@ -75,9 +75,6 @@ The application reads `.env` through `@nestjs/config` and validates the variable
 | `DATABASE_USERNAME` | Yes | `postgres` | PostgreSQL username. |
 | `DATABASE_PASSWORD` | Yes | `postgres` | PostgreSQL password. |
 | `DATABASE_NAME` | Yes | `nestjs_template` | PostgreSQL database name. |
-| `CACHE_HOST` | Yes | `redis` | Redis host used by the shared cache provider. Use `localhost` outside Docker. |
-| `CACHE_PORT` | Yes | `6379` | Redis port. |
-| `CACHE_PASSWORD` | Yes | `myStrongPassword` | Redis password; keep it secret outside local development. |
 | `JWT_SECRET` | Yes | `change-me-in-a-real-environment` | JWT signing secret. Must be at least 12 characters. |
 
 ## Available Commands
@@ -118,8 +115,7 @@ The template keeps a small, explicit module graph:
 AppModule
 ├── CustomConfigModule
 ├── DatabaseModule
-│   ├── OrmDatabaseModule
-│   └── CustomCacheModule
+│   └── OrmDatabaseModule
 ├── AuthModule
 └── UsersModule
 ```
@@ -135,12 +131,11 @@ src/modules/<module>
 
 Auth and user responses are intentionally sanitized: password values are accepted only as credentials or persistence inputs and are not returned by the public user DTO mapper.
 
-## Database and Cache
+## Database
 
 - PostgreSQL is the runtime database and is configured through TypeORM.
 - The migration datasource uses the same PostgreSQL environment variables as the application runtime.
-- Redis is wired as a shared cache provider through `CustomCacheModule`; it is available to future modules but not exposed as a public API by this template.
-- In local Docker mode, service-to-service hosts are `postgres` and `redis`. In local Node mode, set those hosts to `localhost` in `.env`.
+- In local Docker mode, the service-to-service database host is `postgres`. In local Node mode, set `DATABASE_HOST=localhost` in `.env`.
 
 ## Testing
 

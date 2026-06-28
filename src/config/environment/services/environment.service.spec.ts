@@ -41,12 +41,6 @@ describe('EnvironmentService', () => {
                   return 'password';
                 case 'DATABASE_NAME':
                   return 'dbname';
-                case 'CACHE_HOST':
-                  return 'redis';
-                case 'CACHE_PORT':
-                  return 6379;
-                case 'CACHE_PASSWORD':
-                  return 'cachepassword';
                 default:
                   return undefined;
               }
@@ -127,17 +121,4 @@ describe('EnvironmentService', () => {
     });
   });
 
-  describe('cache', () => {
-    it('should get cache configuration', () => {
-      const expectedCacheConfig = {
-        host: 'redis',
-        port: 6379,
-        password: 'cachepassword',
-      };
-      expect(service.cache).toEqual(expectedCacheConfig);
-      expect(configService.get).toHaveBeenCalledWith('CACHE_HOST');
-      expect(configService.get).toHaveBeenCalledWith('CACHE_PORT');
-      expect(configService.get).toHaveBeenCalledWith('CACHE_PASSWORD');
-    });
-  });
 });
