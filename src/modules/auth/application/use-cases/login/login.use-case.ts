@@ -1,7 +1,7 @@
-import { LoginDto } from "@modules/auth/infrastructure/dto";
-import { AuthService } from "@modules/auth/infrastructure/services";
-import { FindUserByEmailUseCase } from "@modules/users/application/use-cases/find-user-by-email";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import type { LoginCommand, LoginOutput } from '@modules/auth/application/dto';
+import { AuthService } from '@modules/auth/infrastructure/services';
+import { FindUserByEmailUseCase } from '@modules/users/application/use-cases/find-user-by-email';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class LoginUseCase {
     private readonly authService: AuthService,
   ) { }
 
-  async execute(loginDto: LoginDto): Promise<{ accessToken: string }> {
+  async execute(loginDto: LoginCommand): Promise<LoginOutput> {
     const user = await this.findUserByEmailUseCase.execute({
       email: loginDto.email,
     });
@@ -29,4 +29,3 @@ export class LoginUseCase {
     return { accessToken };
   }
 }
-

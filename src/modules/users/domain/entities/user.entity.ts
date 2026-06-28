@@ -8,6 +8,8 @@ export enum UserRole {
 }
 
 @Entity('users')
+// Transitional TypeORM entity kept in domain during PR1 to avoid wiring churn.
+// PR2 should move persistence decorators to an infrastructure ORM entity.
 export class UserEntity extends CustomBaseEntity {
   @Column({ unique: true })
   email: string;
