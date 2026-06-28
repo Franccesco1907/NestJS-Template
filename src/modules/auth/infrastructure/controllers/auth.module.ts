@@ -14,6 +14,7 @@ import { AuthController } from './auth.controller';
 @Module({
   imports: [
     UsersModule,
+    ConfigModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule], // Importa ConfigModule para usar ConfigService
